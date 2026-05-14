@@ -46,7 +46,7 @@ codex_hooks = true
 克隆仓库：
 
 ```powershell
-git clone https://github.com/<your-user-or-org>/codex-task-notifier.git
+git clone https://github.com/My-sec/codex-task-notifier.git
 cd codex-task-notifier
 ```
 
@@ -202,22 +202,3 @@ approval_policy = "on-request"
 ### 有弹窗但没有声音
 
 worker 会尝试播放多个 Windows 系统通知音，并在失败时回退到 `SystemSounds.Exclamation`。如果你的系统提示音被静音，可能只有弹窗没有声音。
-
-## 发布到 GitHub
-
-如果这是本地仓库，可以使用：
-
-```powershell
-git init
-git add .
-git commit -m "Initial Codex task notifier"
-gh repo create codex-task-notifier --public --source . --remote origin --push
-```
-
-也可以先在 GitHub 网页创建空仓库，然后执行：
-
-```powershell
-git remote add origin https://github.com/<your-user-or-org>/codex-task-notifier.git
-git branch -M main
-git push -u origin main
-```
