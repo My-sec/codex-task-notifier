@@ -15,7 +15,7 @@ hooks/
   codex_permission_notify.ps1    # PermissionRequest hook 入口：授权提醒
   codex_notify_worker.ps1        # 公共弹窗 + 声音提醒 worker
 scripts/
-  test-notification.ps1          # 本地冒烟测试脚本
+  test-notification.ps1          # 本地快速测试脚本
 examples/
   hooks.json                     # 手动配置 hooks.json 示例
   config.toml.snippet            # config.toml 最小配置片段
