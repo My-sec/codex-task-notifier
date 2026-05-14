@@ -65,8 +65,11 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\install.ps1
 如果你的 Codex home 是自定义路径：
 
 ```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\install.ps1 -CodexHome "D:\path\to\.codex"
+$env:CODEX_HOME = "<your-codex-home>"
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\install.ps1 -CodexHome $env:CODEX_HOME
 ```
+
+生成的 hook 命令不会写入你的 Windows 用户名。它会在运行时优先从 `CODEX_HOME` 解析 Codex home；如果没有设置 `CODEX_HOME`，则使用 `%USERPROFILE%\.codex`。
 
 安装脚本会完成以下操作：
 
@@ -117,7 +120,7 @@ hooks\codex_notify_worker.ps1
 %USERPROFILE%\.codex\hooks.json
 ```
 
-可以参考 [examples/hooks.json](examples/hooks.json)，并将其中的 `C:\\Users\\<you>` 替换为你的真实用户路径。
+可以参考 [examples/hooks.json](examples/hooks.json)。示例会在运行时通过 `CODEX_HOME` 或 `%USERPROFILE%` 解析 hook 目录，不需要硬编码包含用户名的绝对路径。
 
 3. 确保：
 
@@ -218,4 +221,3 @@ git remote add origin https://github.com/<your-user-or-org>/codex-task-notifier.
 git branch -M main
 git push -u origin main
 ```
-

@@ -65,8 +65,11 @@ By default, the installer uses:
 If you use a custom Codex home:
 
 ```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\install.ps1 -CodexHome "D:\path\to\.codex"
+$env:CODEX_HOME = "<your-codex-home>"
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\install.ps1 -CodexHome $env:CODEX_HOME
 ```
+
+The generated hook commands do not contain your Windows user name. They resolve the Codex home at runtime from `CODEX_HOME`, or from `%USERPROFILE%\.codex` when `CODEX_HOME` is not set.
 
 The installer will:
 
@@ -117,7 +120,7 @@ to:
 %USERPROFILE%\.codex\hooks.json
 ```
 
-Use [examples/hooks.json](examples/hooks.json), replacing `C:\\Users\\<you>` with your actual user path.
+Use [examples/hooks.json](examples/hooks.json). The example resolves the hook directory at runtime from `CODEX_HOME` or `%USERPROFILE%`, so it does not need a hard-coded absolute user path.
 
 3. Ensure:
 
@@ -218,4 +221,3 @@ git remote add origin https://github.com/<your-user-or-org>/codex-task-notifier.
 git branch -M main
 git push -u origin main
 ```
-

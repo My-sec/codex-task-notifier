@@ -72,6 +72,14 @@ function Ensure-FeatureHooksEnabled([string]$ConfigPath) {
     Set-Content -LiteralPath $ConfigPath -Value ($lines -join "`r`n") -Encoding UTF8
 }
 
+function Get-PortableHookCommand([string]$ScriptName) {
+    # Keep hooks.json portable and avoid writing absolute paths such as
+    # user-profile-specific paths into Codex config. At hook runtime, resolve Codex home
+    # from CODEX_HOME when present, otherwise from USERPROFILE\.codex.
+    $template = 'powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "$codexHome = if ($env:CODEX_HOME) { $env:CODEX_HOME } else { Join-Path $env:USERPROFILE ''.codex'' }; & (Join-Path $codexHome ''hooks\__SCRIPT_NAME__'')"'
+    return $template.Replace("__SCRIPT_NAME__", $ScriptName)
+}
+
 $repoRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 $sourceHooksDir = Join-Path $repoRoot "hooks"
 $targetHooksDir = Join-Path $CodexHome "hooks"
@@ -98,8 +106,9 @@ Write-Info "Installed hook scripts to $targetHooksDir"
 
 Backup-IfExists $hooksJsonPath
 
-$doneScript = Join-Path $targetHooksDir "codex_done.ps1"
-$permissionScript = Join-Path $targetHooksDir "codex_permission_notify.ps1"
+if ($CodexHome -ne (Join-Path $env:USERPROFILE ".codex") -and -not $env:CODEX_HOME) {
+    Write-Info "Custom CodexHome was provided. Set CODEX_HOME to the same path before running Codex so portable hook commands can resolve it."
+}
 
 $hooksConfig = [ordered]@{
     hooks = [ordered]@{
@@ -108,7 +117,7 @@ $hooksConfig = [ordered]@{
                 hooks = @(
                     [ordered]@{
                         type = "command"
-                        command = "powershell.exe -NoProfile -ExecutionPolicy Bypass -File `"$doneScript`""
+                        command = Get-PortableHookCommand "codex_done.ps1"
                         timeout = 10
                     }
                 )
@@ -119,7 +128,7 @@ $hooksConfig = [ordered]@{
                 hooks = @(
                     [ordered]@{
                         type = "command"
-                        command = "powershell.exe -NoProfile -ExecutionPolicy Bypass -File `"$permissionScript`""
+                        command = Get-PortableHookCommand "codex_permission_notify.ps1"
                         timeout = 10
                     }
                 )
@@ -142,4 +151,3 @@ Write-Host "Next steps:"
 Write-Host "  1. Restart Codex / reload the VS Code Codex extension."
 Write-Host "  2. If Codex says hooks need review, run /hooks and approve the two local commands."
 Write-Host "  3. Use scripts\\test-notification.ps1 to smoke-test the installed notifier."
-
