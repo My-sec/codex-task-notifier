@@ -15,7 +15,7 @@ hooks/
   codex_permission_notify.ps1    # PermissionRequest hook entry point
   codex_notify_worker.ps1        # Shared popup + sound worker
 scripts/
-  test-notification.ps1          # Local smoke test
+  test-notification.ps1          # Local quick test
 examples/
   hooks.json                     # Manual hooks.json example
   config.toml.snippet            # Minimal config.toml feature snippet
@@ -74,9 +74,11 @@ The generated hook commands do not contain your Windows user name. They resolve 
 The installer will:
 
 1. copy the three hook scripts to `<CodexHome>\hooks`;
-2. write `<CodexHome>\hooks.json`;
+2. create or merge `<CodexHome>\hooks.json`;
 3. ensure `<CodexHome>\config.toml` contains `[features].hooks = true`;
 4. back up existing `hooks.json` and `config.toml` before modifying them.
+
+When `hooks.json` already exists, the installer preserves existing hook events and commands. It only removes older `codex_done.ps1` / `codex_permission_notify.ps1` entries and then adds the current notifier hooks.
 
 ## Required Codex approval step
 
@@ -137,7 +139,7 @@ hooks = true
 
 4. Restart Codex and approve hooks with `/hooks`.
 
-## Smoke test
+## Local quick test
 
 After installing, run:
 
@@ -193,7 +195,7 @@ Check:
 2. `[features].hooks = true` is present in `config.toml`.
 3. You restarted Codex after installation.
 4. You approved the hooks via `/hooks`.
-5. Run the smoke test script manually.
+5. Run the local quick test script manually.
 
 ### Completion popup works, permission popup does not
 

@@ -74,9 +74,11 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\install.ps1 -CodexHome
 安装脚本会完成以下操作：
 
 1. 将三个 hook 脚本复制到 `<CodexHome>\hooks`；
-2. 写入 `<CodexHome>\hooks.json`；
+2. 创建或合并 `<CodexHome>\hooks.json`；
 3. 确保 `<CodexHome>\config.toml` 中包含 `[features].hooks = true`；
 4. 修改前自动备份已有的 `hooks.json` 和 `config.toml`。
+
+如果 `hooks.json` 已经存在，安装脚本会保留已有 hook 事件和命令。它只会移除旧的 `codex_done.ps1` / `codex_permission_notify.ps1` 项，然后添加当前版本的提醒 hook。
 
 ## 必须进行的 Codex 审核步骤
 
@@ -193,7 +195,7 @@ approval_policy = "on-request"
 2. `config.toml` 中是否存在 `[features].hooks = true`；
 3. 安装后是否重启了 Codex；
 4. 是否已经通过 `/hooks` 审核允许 hook；
-5. 是否可以手动运行冒烟测试脚本。
+5. 是否可以手动运行本地快速测试脚本。
 
 ### 任务完成提醒有效，但授权提醒无效
 

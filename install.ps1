@@ -80,6 +80,114 @@ function Get-PortableHookCommand([string]$ScriptName) {
     return $template.Replace("__SCRIPT_NAME__", $ScriptName)
 }
 
+function Test-ObjectProperty([object]$Object, [string]$Name) {
+    return ($null -ne $Object -and $Object.PSObject.Properties.Name -contains $Name)
+}
+
+function Set-ObjectProperty([object]$Object, [string]$Name, [object]$Value) {
+    if (Test-ObjectProperty $Object $Name) {
+        $Object.PSObject.Properties[$Name].Value = $Value
+    } else {
+        Add-Member -InputObject $Object -MemberType NoteProperty -Name $Name -Value $Value -Force
+    }
+}
+
+function New-CodexNotifierHookGroup([string]$ScriptName) {
+    return [ordered]@{
+        hooks = @(
+            [ordered]@{
+                type = "command"
+                command = Get-PortableHookCommand $ScriptName
+                timeout = 10
+            }
+        )
+    }
+}
+
+function Test-CodexNotifierCommand([object]$Hook, [string]$ScriptName) {
+    if ($null -eq $Hook -or -not (Test-ObjectProperty $Hook "command")) {
+        return $false
+    }
+
+    $command = [string]$Hook.command
+    return (-not [string]::IsNullOrWhiteSpace($command) -and $command -like "*$ScriptName*")
+}
+
+function Merge-CodexNotifierHook([object]$HooksRoot, [string]$EventName, [string]$ScriptName) {
+    $existingGroups = @()
+    if (Test-ObjectProperty $HooksRoot $EventName) {
+        $existingGroups = @($HooksRoot.PSObject.Properties[$EventName].Value)
+    }
+
+    $mergedGroups = New-Object System.Collections.Generic.List[object]
+
+    foreach ($group in $existingGroups) {
+        if ($null -eq $group) {
+            continue
+        }
+
+        if (-not (Test-ObjectProperty $group "hooks")) {
+            # Preserve unexpected group shapes instead of deleting user config.
+            $mergedGroups.Add($group)
+            continue
+        }
+
+        $filteredHooks = @()
+        foreach ($hook in @($group.hooks)) {
+            if (-not (Test-CodexNotifierCommand $hook $ScriptName)) {
+                $filteredHooks += $hook
+            }
+        }
+
+        if ($filteredHooks.Count -gt 0) {
+            Set-ObjectProperty $group "hooks" @($filteredHooks)
+            $mergedGroups.Add($group)
+        }
+    }
+
+    $mergedGroups.Add((New-CodexNotifierHookGroup $ScriptName))
+    Set-ObjectProperty $HooksRoot $EventName @($mergedGroups.ToArray())
+}
+
+function Read-CodexHooksConfig([string]$HooksJsonPath) {
+    if (-not (Test-Path -LiteralPath $HooksJsonPath)) {
+        return [pscustomobject]@{
+            hooks = [pscustomobject]@{}
+        }
+    }
+
+    $text = Get-Content -LiteralPath $HooksJsonPath -Raw
+    if ([string]::IsNullOrWhiteSpace($text)) {
+        return [pscustomobject]@{
+            hooks = [pscustomobject]@{}
+        }
+    }
+
+    try {
+        $config = $text | ConvertFrom-Json -ErrorAction Stop
+    } catch {
+        throw "Existing hooks.json is not valid JSON: $HooksJsonPath. A backup was created; fix or remove the file and rerun install.ps1. $($_.Exception.Message)"
+    }
+
+    if ($null -eq $config) {
+        $config = [pscustomobject]@{}
+    }
+
+    if (-not (Test-ObjectProperty $config "hooks") -or $null -eq $config.hooks -or $config.hooks -isnot [pscustomobject]) {
+        Set-ObjectProperty $config "hooks" ([pscustomobject]@{})
+    }
+
+    return $config
+}
+
+function Merge-CodexHooksConfig([string]$HooksJsonPath) {
+    $config = Read-CodexHooksConfig $HooksJsonPath
+    Merge-CodexNotifierHook $config.hooks "Stop" "codex_done.ps1"
+    Merge-CodexNotifierHook $config.hooks "PermissionRequest" "codex_permission_notify.ps1"
+    $config | ConvertTo-Json -Depth 20 | Set-Content -LiteralPath $HooksJsonPath -Encoding UTF8
+    Write-Info "Merged notifier hooks into $HooksJsonPath"
+}
+
 $repoRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 $sourceHooksDir = Join-Path $repoRoot "hooks"
 $targetHooksDir = Join-Path $CodexHome "hooks"
@@ -110,35 +218,7 @@ if ($CodexHome -ne (Join-Path $env:USERPROFILE ".codex") -and -not $env:CODEX_HO
     Write-Info "Custom CodexHome was provided. Set CODEX_HOME to the same path before running Codex so portable hook commands can resolve it."
 }
 
-$hooksConfig = [ordered]@{
-    hooks = [ordered]@{
-        Stop = @(
-            [ordered]@{
-                hooks = @(
-                    [ordered]@{
-                        type = "command"
-                        command = Get-PortableHookCommand "codex_done.ps1"
-                        timeout = 10
-                    }
-                )
-            }
-        )
-        PermissionRequest = @(
-            [ordered]@{
-                hooks = @(
-                    [ordered]@{
-                        type = "command"
-                        command = Get-PortableHookCommand "codex_permission_notify.ps1"
-                        timeout = 10
-                    }
-                )
-            }
-        )
-    }
-}
-
-$hooksConfig | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $hooksJsonPath -Encoding UTF8
-Write-Info "Wrote $hooksJsonPath"
+Merge-CodexHooksConfig $hooksJsonPath
 
 if (-not $SkipConfigEdit) {
     Backup-IfExists $configPath
@@ -150,4 +230,4 @@ Write-Info "Done."
 Write-Host "Next steps:"
 Write-Host "  1. Restart Codex / reload the VS Code Codex extension."
 Write-Host "  2. If Codex says hooks need review, run /hooks and approve the two local commands."
-Write-Host "  3. Use scripts\\test-notification.ps1 to smoke-test the installed notifier."
+Write-Host "  3. Use scripts\\test-notification.ps1 to quick-test the installed notifier."
