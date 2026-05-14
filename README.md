@@ -46,7 +46,7 @@ codex_hooks = true
 Clone the repository:
 
 ```powershell
-git clone https://github.com/<your-user-or-org>/codex-task-notifier.git
+git clone https://github.com/My-sec/codex-task-notifier.git
 cd codex-task-notifier
 ```
 
@@ -202,22 +202,3 @@ This is usually expected when Codex is configured not to ask for approval. See [
 ### Sound does not play
 
 The worker tries several Windows notification WAV files and then falls back to `SystemSounds.Exclamation`. If your system sound scheme is muted, the popup may still appear without audible sound.
-
-## Publishing this repository to GitHub
-
-If this is a local repository, publish it with:
-
-```powershell
-git init
-git add .
-git commit -m "Initial Codex task notifier"
-gh repo create codex-task-notifier --public --source . --remote origin --push
-```
-
-Or create an empty GitHub repository manually and push:
-
-```powershell
-git remote add origin https://github.com/<your-user-or-org>/codex-task-notifier.git
-git branch -M main
-git push -u origin main
-```
