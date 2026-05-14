@@ -1,0 +1,11 @@
+# Runtime files written by the notifier after installation.
+hooks/*.log
+hooks/codex_last_sound.txt
+
+# Local/editor files.
+.vscode/
+.idea/
+*.tmp
+*.bak
+*.bak_*
+
