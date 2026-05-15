@@ -71,6 +71,8 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\install.ps1 -CodexHome
 
 生成的 hook 命令不会写入你的 Windows 用户名。它会在运行时优先从 `CODEX_HOME` 解析 Codex home；如果没有设置 `CODEX_HOME`，则使用 `%USERPROFILE%\.codex`。
 
+安装脚本写入的 hook 命令使用 `powershell.exe -EncodedCommand`。这样可以避免 Windows 上外层 PowerShell 提前展开 `$env:CODEX_HOME` 或 `$codexHome`，从而导致 hook 以 `exit code 1` 失败。
+
 安装脚本会完成以下操作：
 
 1. 将三个 hook 脚本复制到 `<CodexHome>\hooks`；

@@ -5,7 +5,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -Command \"$codexHome = if ($env:CODEX_HOME) { $env:CODEX_HOME } else { Join-Path $env:USERPROFILE '.codex' }; & (Join-Path $codexHome 'hooks\\codex_done.ps1')\"",
+            "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -EncodedCommand JABjAG8AZABlAHgASABvAG0AZQAgAD0AIABpAGYAIAAoACQAZQBuAHYAOgBDAE8ARABFAFgAXwBIAE8ATQBFACkAIAB7ACAAJABlAG4AdgA6AEMATwBEAEUAWABfAEgATwBNAEUAIAB9ACAAZQBsAHMAZQAgAHsAIABKAG8AaQBuAC0AUABhAHQAaAAgACQAZQBuAHYAOgBVAFMARQBSAFAAUgBPAEYASQBMAEUAIAAnAC4AYwBvAGQAZQB4ACcAIAB9ADsAIAAmACAAKABKAG8AaQBuAC0AUABhAHQAaAAgACQAYwBvAGQAZQB4AEgAbwBtAGUAIAAnAGgAbwBvAGsAcwBcAGMAbwBkAGUAeABfAGQAbwBuAGUALgBwAHMAMQAnACkA",
             "timeout": 10
           }
         ]
@@ -16,7 +16,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -Command \"$codexHome = if ($env:CODEX_HOME) { $env:CODEX_HOME } else { Join-Path $env:USERPROFILE '.codex' }; & (Join-Path $codexHome 'hooks\\codex_permission_notify.ps1')\"",
+            "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -EncodedCommand JABjAG8AZABlAHgASABvAG0AZQAgAD0AIABpAGYAIAAoACQAZQBuAHYAOgBDAE8ARABFAFgAXwBIAE8ATQBFACkAIAB7ACAAJABlAG4AdgA6AEMATwBEAEUAWABfAEgATwBNAEUAIAB9ACAAZQBsAHMAZQAgAHsAIABKAG8AaQBuAC0AUABhAHQAaAAgACQAZQBuAHYAOgBVAFMARQBSAFAAUgBPAEYASQBMAEUAIAAnAC4AYwBvAGQAZQB4ACcAIAB9ADsAIAAmACAAKABKAG8AaQBuAC0AUABhAHQAaAAgACQAYwBvAGQAZQB4AEgAbwBtAGUAIAAnAGgAbwBvAGsAcwBcAGMAbwBkAGUAeABfAHAAZQByAG0AaQBzAHMAaQBvAG4AXwBuAG8AdABpAGYAeQAuAHAAcwAxACcAKQA=",
             "timeout": 10
           }
         ]

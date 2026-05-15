@@ -71,6 +71,8 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\install.ps1 -CodexHome
 
 The generated hook commands do not contain your Windows user name. They resolve the Codex home at runtime from `CODEX_HOME`, or from `%USERPROFILE%\.codex` when `CODEX_HOME` is not set.
 
+The generated hook commands use `powershell.exe -EncodedCommand`. This avoids failures on Windows when an outer PowerShell shell expands `$env:CODEX_HOME` or `$codexHome` before the command reaches the inner PowerShell process, which can otherwise make the hook fail with `exit code 1`.
+
 The installer will:
 
 1. copy the three hook scripts to `<CodexHome>\hooks`;

@@ -76,8 +76,16 @@ function Get-PortableHookCommand([string]$ScriptName) {
     # Keep hooks.json portable and avoid writing absolute paths such as
     # user-profile-specific paths into Codex config. At hook runtime, resolve Codex home
     # from CODEX_HOME when present, otherwise from USERPROFILE\.codex.
-    $template = 'powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "$codexHome = if ($env:CODEX_HOME) { $env:CODEX_HOME } else { Join-Path $env:USERPROFILE ''.codex'' }; & (Join-Path $codexHome ''hooks\__SCRIPT_NAME__'')"'
-    return $template.Replace("__SCRIPT_NAME__", $ScriptName)
+    #
+    # Use -EncodedCommand instead of -Command "...$env:...". Some Codex/VS Code
+    # Windows hook runners execute the hook command through a PowerShell outer shell;
+    # an unencoded -Command string can have $env:CODEX_HOME or $codexHome expanded
+    # by that outer shell before it reaches the inner powershell.exe process, which
+    # turns the command into invalid syntax and makes the hook exit with code 1.
+    $scriptPath = "hooks\$ScriptName"
+    $code = '$codexHome = if ($env:CODEX_HOME) { $env:CODEX_HOME } else { Join-Path $env:USERPROFILE ''.codex'' }; & (Join-Path $codexHome ''' + $scriptPath + ''')'
+    $encoded = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($code))
+    return "powershell.exe -NoProfile -ExecutionPolicy Bypass -EncodedCommand $encoded"
 }
 
 function Test-ObjectProperty([object]$Object, [string]$Name) {
