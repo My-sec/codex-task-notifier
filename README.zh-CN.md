@@ -203,6 +203,22 @@ approval_policy = "on-request"
 
 这通常是正常现象。原因是 Codex 当前配置可能不会请求人工授权。请参考“关于授权提醒的注意事项”。
 
+### 更换提示音
+
+请使用 WAV 文件。worker 会优先检查自定义提示音，然后才使用 Windows 内置提示音：
+
+1. 如果 `CODEX_NOTIFY_SOUND` 环境变量指向一个存在的 `.wav` 文件，则优先播放它。
+2. 如果 `%USERPROFILE%\.codex\hooks\codex_notify.wav` 存在，则播放该文件。
+3. 否则播放 Windows 内置通知 WAV 文件。
+
+最简单的方法是把你想用的 WAV 文件复制或重命名为：
+
+```text
+%USERPROFILE%\.codex\hooks\codex_notify.wav
+```
+
+然后重启 Codex / 重新加载 VS Code Codex 扩展。
+
 ### 有弹窗但没有声音
 
-worker 会尝试播放多个 Windows 系统通知音，并在失败时回退到 `SystemSounds.Exclamation`。如果你的系统提示音被静音，可能只有弹窗没有声音。
+worker 会先尝试你的自定义 WAV 文件，然后依次尝试多个 Windows 通知 WAV 文件，最后回退到 `SystemSounds.Exclamation`。如果系统声音方案被静音，可能只显示弹窗没有声音。

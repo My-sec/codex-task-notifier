@@ -203,6 +203,22 @@ Check:
 
 This is usually expected when Codex is configured not to ask for approval. See [Permission reminder caveat](#permission-reminder-caveat).
 
+### Change the sound
+
+Use a WAV file. The worker checks custom sounds before built-in Windows sounds:
+
+1. `CODEX_NOTIFY_SOUND`, if the environment variable points to an existing `.wav` file.
+2. `%USERPROFILE%\.codex\hooks\codex_notify.wav`, if that file exists.
+3. Built-in Windows notification WAV files.
+
+The simplest way is to copy or rename your preferred WAV file to:
+
+```text
+%USERPROFILE%\.codex\hooks\codex_notify.wav
+```
+
+Then restart Codex / reload the VS Code Codex extension.
+
 ### Sound does not play
 
-The worker tries several Windows notification WAV files and then falls back to `SystemSounds.Exclamation`. If your system sound scheme is muted, the popup may still appear without audible sound.
+The worker tries your custom WAV file first, then several Windows notification WAV files, and finally falls back to `SystemSounds.Exclamation`. If your system sound scheme is muted, the popup may still appear without audible sound.
