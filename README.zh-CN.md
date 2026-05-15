@@ -199,6 +199,14 @@ approval_policy = "on-request"
 4. 是否已经通过 `/hooks` 审核允许 hook；
 5. 是否可以手动运行本地快速测试脚本。
 
+### Codex 提示 `failed to parse hooks config`
+
+请重新运行安装脚本。安装脚本会用无 BOM 的 UTF-8 写入 `hooks.json`，避免 Codex 的严格 JSON 解析器在第 1 行第 1 列失败：
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\install.ps1
+```
+
 ### 任务完成提醒有效，但授权提醒无效
 
 这通常是正常现象。原因是 Codex 当前配置可能不会请求人工授权。请参考“关于授权提醒的注意事项”。

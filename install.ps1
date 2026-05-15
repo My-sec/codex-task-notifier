@@ -18,9 +18,15 @@ function Backup-IfExists([string]$Path) {
     }
 }
 
+function Write-Utf8NoBom([string]$Path, [string]$Text) {
+    # Codex's hook JSON parser is strict and can reject a UTF-8 BOM at byte 0.
+    $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
+    [System.IO.File]::WriteAllText($Path, $Text, $utf8NoBom)
+}
+
 function Ensure-FeatureHooksEnabled([string]$ConfigPath) {
     if (-not (Test-Path -LiteralPath $ConfigPath)) {
-        Set-Content -LiteralPath $ConfigPath -Value "[features]`nhooks = true`n" -Encoding UTF8
+        Write-Utf8NoBom $ConfigPath "[features]`nhooks = true`n"
         Write-Info "Created config.toml with [features].hooks = true"
         return
     }
@@ -38,7 +44,7 @@ function Ensure-FeatureHooksEnabled([string]$ConfigPath) {
 
     if ($featuresIndex -lt 0) {
         $newText = $text.TrimEnd() + "`r`n`r`n[features]`r`nhooks = true`r`n"
-        Set-Content -LiteralPath $ConfigPath -Value $newText -Encoding UTF8
+        Write-Utf8NoBom $ConfigPath $newText
         Write-Info "Added [features].hooks = true"
         return
     }
@@ -69,7 +75,7 @@ function Ensure-FeatureHooksEnabled([string]$ConfigPath) {
         Write-Info "Inserted [features].hooks = true"
     }
 
-    Set-Content -LiteralPath $ConfigPath -Value ($lines -join "`r`n") -Encoding UTF8
+    Write-Utf8NoBom $ConfigPath ($lines -join "`r`n")
 }
 
 function Get-PortableHookCommand([string]$ScriptName) {
@@ -210,7 +216,7 @@ function Merge-CodexHooksConfig([string]$HooksJsonPath) {
     $config = Read-CodexHooksConfig $HooksJsonPath
     Merge-CodexNotifierHook $config.hooks "Stop" "codex_done.ps1"
     Merge-CodexNotifierHook $config.hooks "PermissionRequest" "codex_permission_notify.ps1"
-    $config | ConvertTo-Json -Depth 20 | Set-Content -LiteralPath $HooksJsonPath -Encoding UTF8
+    Write-Utf8NoBom $HooksJsonPath (($config | ConvertTo-Json -Depth 20) + "`n")
     Write-Info "Merged notifier hooks into $HooksJsonPath"
 }
 

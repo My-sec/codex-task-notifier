@@ -199,6 +199,14 @@ Check:
 4. You approved the hooks via `/hooks`.
 5. Run the local quick test script manually.
 
+### Codex says `failed to parse hooks config`
+
+Run the installer again. It writes `hooks.json` as UTF-8 without BOM, which avoids strict JSON parser failures at line 1 column 1:
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\install.ps1
+```
+
 ### Completion popup works, permission popup does not
 
 This is usually expected when Codex is configured not to ask for approval. See [Permission reminder caveat](#permission-reminder-caveat).
