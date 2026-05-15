@@ -118,7 +118,25 @@ function Test-CodexNotifierCommand([object]$Hook, [string]$ScriptName) {
     }
 
     $command = [string]$Hook.command
-    return (-not [string]::IsNullOrWhiteSpace($command) -and $command -like "*$ScriptName*")
+    if ([string]::IsNullOrWhiteSpace($command)) {
+        return $false
+    }
+
+    if ($command -like "*$ScriptName*") {
+        return $true
+    }
+
+    $encodedMatch = [regex]::Match($command, '(?i)(?:^|\s)-EncodedCommand\s+("?)([A-Za-z0-9+/=]+)\1')
+    if (-not $encodedMatch.Success) {
+        return $false
+    }
+
+    try {
+        $decodedCommand = [Text.Encoding]::Unicode.GetString([Convert]::FromBase64String($encodedMatch.Groups[2].Value))
+        return ($decodedCommand -like "*$ScriptName*")
+    } catch {
+        return $false
+    }
 }
 
 function Merge-CodexNotifierHook([object]$HooksRoot, [string]$EventName, [string]$ScriptName) {
